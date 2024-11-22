@@ -9,7 +9,9 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-playground/form/v4"
 	"github.com/same-ou/lets-go/internal/models"
+
 )
 
 type application struct {
@@ -17,6 +19,7 @@ type application struct {
 	infoLog       *log.Logger
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
+	formDecoder *form.Decoder
 }
 
 func main() {
@@ -24,7 +27,7 @@ func main() {
 	dsn := flag.String("dsn", "user:password@/mydb?parseTime=true", "MySQL data source name")
 
 	flag.Parse()
-
+	
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
@@ -41,10 +44,11 @@ func main() {
 	}
 
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &models.SnippetModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder: form.NewDecoder(),
 	}
 
 	srv := &http.Server{
