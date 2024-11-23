@@ -21,3 +21,10 @@ github.com/julienschmidt/httprouter
 # github.com/justinas/alice v1.2.0
 ## explicit; go 1.12
 github.com/justinas/alice
+# github.com/justinas/nosurf v1.1.1
+## explicit; go 1.12
+github.com/justinas/nosurf
+# golang.org/x/crypto v0.29.0
+## explicit; go 1.20
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blowfish
