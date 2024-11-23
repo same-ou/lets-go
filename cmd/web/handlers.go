@@ -49,9 +49,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	data := app.newTemplateData(r)
 	data.Snippet = snippet
+	flash := app.sessionManager.PopString(r.Context(), "flash")
+	
+	data.Flash = flash
+	
 	// Use the render() helper.
 	app.render(w, http.StatusOK, "view.tmpl.html", data)
 }
@@ -133,7 +136,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	app.sessionManager.Put(r.Context() ,"flash", "Snipp")
+	app.sessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
 
 	http.Redirect(w, r, "/snippet/view/"+strconv.Itoa(id), http.StatusSeeOther)
 
