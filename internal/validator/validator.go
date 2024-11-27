@@ -56,6 +56,15 @@ func PermittedInt(value int, permitted ...int) bool {
 	return false
 }
 
+func PermittedValue[T comparable](value T, permittedValues ...T) bool {
+	for i := range permittedValues {
+		if value == permittedValues[i] {
+			return true
+		}
+	}
+	return false
+}
+
 var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 func MinChars(value string, n int) bool {

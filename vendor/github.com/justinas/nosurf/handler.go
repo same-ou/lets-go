@@ -1,3 +1,4 @@
+
 // Package nosurf implements an HTTP handler that
 // mitigates Cross-Site Request Forgery Attacks.
 package nosurf

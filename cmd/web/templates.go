@@ -2,10 +2,12 @@ package main
 
 import (
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"time"
 
 	"github.com/same-ou/lets-go/internal/models"
+	"github.com/same-ou/lets-go/ui"
 )
 
 type templateData struct {
@@ -19,7 +21,11 @@ type templateData struct {
 }
 
 func humanDate(t time.Time) string {
-	return t.Format("02 Jan 2006 at 15:04")
+	if t.IsZero() {
+		return ""
+	}
+
+	return t.UTC().Format("02 Jan 2006 at 15:04")
 }
 
 var functions = template.FuncMap{
@@ -30,7 +36,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	// Initialize a new map to act as the cache.
 	cache := map[string]*template.Template{}
 
-	pages, err := filepath.Glob("./ui/html/pages/*.html")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.html")
 	if err != nil {
 		return nil, err
 	}
@@ -40,20 +46,15 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// Extract the file name (like 'home.tmpl') from the full filepath
 		// and assign it to the name variable.
 		name := filepath.Base(page)
+
+		patterns := []string{
+			"html/base.tmpl.html",
+			"html/partials/*.tmpl.html",
+			page,
+			}
+
 		// Parse the base template file into a template set.
-		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl.html")
-		if err != nil {
-			return nil, err
-		}
-
-		// Call ParseGlob() *on this template set* to add any partials.
-		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl.html")
-		if err != nil {
-			return nil, err
-		}
-
-		// Call ParseFiles() *on this template set* to add the
-		ts, err = ts.ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}

@@ -1,0 +1,7 @@
+Dockerfile
+docker-compose.yml
+.git
+docker-compose.override.yml
+.vs
+.vscode
+docker-compose.yml

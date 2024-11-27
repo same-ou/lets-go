@@ -21,10 +21,11 @@ import (
 )
 
 type application struct {
+	debug          bool
 	errorLog       *log.Logger
 	infoLog        *log.Logger
-	snippets       *models.SnippetModel
-	users          *models.UserModel
+	snippets       models.SnippetModelInterface
+	users          models.UserModelInterface
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager // New field
@@ -33,6 +34,7 @@ type application struct {
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	dsn := flag.String("dsn", "user:password@/mydb?parseTime=true", "MySQL data source name")
+	debug := flag.Bool("debug", false, "Debug mode")
 
 	flag.Parse()
 
@@ -57,6 +59,7 @@ func main() {
 	defer sessionManager.Store.(*mysqlstore.MySQLStore).Close()
 
 	app := &application{
+		debug: 		*debug,
 		errorLog:       errorLog,
 		infoLog:        infoLog,
 		snippets:       &models.SnippetModel{DB: db},

@@ -12,6 +12,10 @@ import (
 	"github.com/go-playground/form/v4"
 )
 
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		app.notFound(w) // Use the notFound() helper
@@ -29,7 +33,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	app.render(w, http.StatusOK, "home.tmpl.html", data)
 }
-
+func (app *application) about(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	app.render(w, http.StatusOK, "about.tmpl.html", data)
+}	
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
@@ -117,7 +124,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	form.CheckField(validator.NotBlank(form.Title), "title", "must not be blank")
 	form.CheckField(validator.MaxChars(form.Title, 100), "title", "must not be more than 100 characters")
 	form.CheckField(validator.NotBlank(form.Content), "content", "must not be blank")
-	form.CheckField(validator.PermittedInt(form.Expires, 1, 7, 365), "expires", "invalid expiry period")
+	form.CheckField(validator.PermittedValue(form.Expires, 1, 7, 365), "expires", "invalid expiry period")
 
 	if !form.Valid() {
 		data := app.newTemplateData(r)
@@ -161,7 +168,7 @@ func (app *application) userSignupPost(rw http.ResponseWriter, r *http.Request) 
 		app.clientError(rw, http.StatusBadRequest)
 		return
 	}
-
+	form.CheckField(validator.NotBlank(form.Name), "name", "This field cannot be blank")
 	form.CheckField(validator.NotBlank(form.Email), "name", "This field cannot be blank")
 	form.CheckField(validator.NotBlank(form.Email), "email", "This field cannot be blank")
 	form.CheckField(validator.Matches(form.Email, validator.EmailRX), "email", "This field must be a valid email address")
