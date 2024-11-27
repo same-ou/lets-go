@@ -8,7 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-
+	"strings"
 	"time"
 
 	"github.com/alexedwards/scs/mysqlstore" // New import
@@ -33,7 +33,7 @@ type application struct {
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	dsn := flag.String("dsn", "user:password@/mydb?parseTime=true", "MySQL data source name")
+	dsn := flag.String("dsn", "user:password@tcp(database:3306)/mydb?parseTime=true", "MySQL data source name")
 	debug := flag.Bool("debug", false, "Debug mode")
 
 	flag.Parse()
@@ -47,6 +47,10 @@ func main() {
 	}
 
 	defer db.Close()
+
+	if err = initDb(db); err != nil {
+		errorLog.Fatal(err)
+	}
 
 	templateCache, err := newTemplateCache()
 	if err != nil {
@@ -99,4 +103,47 @@ func openDB(dsn string) (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+// ReadSQLFile reads the content of an SQL file
+func ReadSQLFile(filename string) (string, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+// SplitSQLCommands splits the SQL script into individual statements based on semicolons
+func SplitSQLCommands(sqlContent string) []string {
+	// Split the SQL content by semicolons (ignoring empty lines and spaces)
+	sqlCommands := strings.Split(sqlContent, ";")
+	var cleanCommands []string
+
+	for _, cmd := range sqlCommands {
+		trimmed := strings.TrimSpace(cmd)
+		if trimmed != "" {
+			cleanCommands = append(cleanCommands, trimmed)
+		}
+	}
+	return cleanCommands
+}
+
+func initDb(db *sql.DB) error {
+	// Read the SQL file
+	sqlContent, err := ReadSQLFile("./schema.sql")
+	if err != nil {
+		return err
+	}
+
+	// Split the SQL content into individual statements
+	sqlCommands := SplitSQLCommands(sqlContent)
+
+	// Execute the SQL statements
+	for _, cmd := range sqlCommands {
+		_, err := db.Exec(cmd)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
